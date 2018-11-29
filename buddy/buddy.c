@@ -96,7 +96,7 @@ void addToFlist (struct head *block) {
 
 struct head *find(int index) {
     if (index == LEVELS-1) {
-        printf("TOP LEVEL BLOCK\n");
+       // printf("TOP LEVEL BLOCK\n");
         if (flists[LEVELS-1] != NULL) {
             struct head *block = flists[LEVELS-1];
             removeFromFlist(block);
@@ -118,9 +118,9 @@ struct head *find(int index) {
 
         addToFlist(splitBlock);
 
-        printf("ORIGINAL BLOCK %d index %d status %s\n", originalBlock, index, "taken");
-        printf("SPLIT    BLOCK %d index %d status %s\n", splitBlock, index, "free");
-        printf("PRIMARY  BLOCK %d index %d status %s\n", primaryBlock, index, "free");
+//        printf("ORIGINAL BLOCK %d index %d status %s\n", originalBlock, index, "taken");
+//        printf("SPLIT    BLOCK %d index %d status %s\n", splitBlock, index, "free");
+//        printf("PRIMARY  BLOCK %d index %d status %s\n", primaryBlock, index, "free");
 
         return buddy(splitBlock);
     } else {
@@ -139,19 +139,19 @@ void insert(struct head *block) {
 
     if (block->level == LEVELS-1) {
         flists[LEVELS-1] = block;
-        printf("ALL FREE ADDRESS %d\n", block);
+    //    printf("ALL FREE ADDRESS %d\n", block);
         return;
     }
 
     struct head *buddyBlock = buddy(block);
-    printf("BLOCK ADDRESS %d BUDDY ADDRESS %d\n", block, buddyBlock);
+    //printf("BLOCK ADDRESS %d BUDDY ADDRESS %d\n", block, buddyBlock);
 
     if (buddyBlock->status == Taken) {
-        printf("BUDDY IS TAKEN\n");
+       // printf("BUDDY IS TAKEN\n");
         addToFlist(block);
     } else {
         block->level++;
-        printf("BLOCK IS FREE at LEVEL %d\n", block->level);
+        //printf("BLOCK IS FREE at LEVEL %d\n", block->level);
         removeFromFlist(buddyBlock);
         insert(block);
     }
@@ -162,11 +162,11 @@ void insert(struct head *block) {
 void removeFromFlist(struct head *block) {
     struct head *listHead = flists[block->level];
 
-    printf("LIST HEAD: %d BLOCK: %d\n", listHead, block);
+    //printf("LIST HEAD: %d BLOCK: %d\n", listHead, block);
 
     do {
         if ((long int)listHead==(long int)block) {
-            printf("EQUAL!\n");
+         //   printf("EQUAL!\n");
 
             if (block->prev == NULL && block->next == NULL) {
                 // Why can't i write this? listHead = NULL;
@@ -195,9 +195,9 @@ void *balloc(size_t size) {
     }
     int index = level(size);
     struct head *taken = find(index);
-    printf("\n\n ---- BLOCK ---- \n");
-    printf("OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
-    printf(" ---- BLOCK ---- \n\n");
+//    printf("\n\n ---- BLOCK ---- \n");
+//    printf("OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
+//    printf(" ---- BLOCK ---- \n\n");
 
     return hide(taken);
 }
@@ -205,7 +205,7 @@ void *balloc(size_t size) {
 void bfree(void *memory) {
     if(memory != NULL) {
         struct head *block = magic(memory);
-        printf("BLOCK TO REMOVE ADDRESS %d\n", block);
+        //printf("BLOCK TO REMOVE ADDRESS %d\n", block);
         insert(block);
     }
     return;
