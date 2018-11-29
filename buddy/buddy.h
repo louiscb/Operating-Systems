@@ -6,4 +6,6 @@
 
 #define BUDDY_BUDDY_H
 
+void test();
+
 #endif //BUDDY_BUDDY_H

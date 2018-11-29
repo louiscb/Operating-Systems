@@ -6,7 +6,6 @@
 
 
 int main(int argc, char *argv[]) {
-    //test();
-
+    test();
     return 0;
 }

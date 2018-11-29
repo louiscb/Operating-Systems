@@ -87,7 +87,30 @@ int level(int req) {
 }
 
 struct head *find(int index) {
-    // for you to implement
+    if (index == LEVELS-1) {
+        printf("TOP LEVEL BLOCK\n");
+        return new();
+    }
+
+    if (flists[index] == NULL) {
+        //Check next level up
+        struct head *originalBlock = find(index+1);
+        struct head *splitBlock = split(originalBlock);
+        splitBlock->level = index;
+        originalBlock->level = index;
+        flists[index] = splitBlock;
+
+        printf("ORIGINAL BLOCK %d index %d\n", originalBlock, index);
+        printf("SPLIT    BLOCK %d index %d\n", splitBlock, index);
+
+        return buddy(splitBlock);
+    } else {
+        //Get block from list and remove it
+        struct head *listBlock = flists[index];
+        flists[index] = NULL;
+        return listBlock;
+    }
+
     return NULL;
 }
 
@@ -97,8 +120,12 @@ void *balloc(size_t size) {
     }
     int index = level(size);
     struct head *taken = find(index);
+
+    printf("\n OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
+
     return hide(taken);
 }
+
 
 void insert(struct head *block) {
     // for you to implement
@@ -114,16 +141,27 @@ void bfree(void *memory) {
     return;
 }
 
-
 // Test sequences
-
 void test() {
+//    printf("size of head is: %ld\n", sizeof(struct head));
+//    printf("level for  7 should be 0 : %d\n", level(7));
+//    printf("level for  8 should be 0 : %d\n", level(8));
+//    printf("level for  9 should be 1 : %d\n", level(9));
+//    printf("level for  20 should be 1 : %d\n", level(20));
+//    printf("level for  40 should be 1 : %d\n", level(40));
+//    printf("level for  41 should be 2 : %d\n", level(41));\
 
-    printf("size of head is: %ld\n", sizeof(struct head));
-    printf("level for  7 should be 0 : %d\n", level(7));
-    printf("level for  8 should be 0 : %d\n", level(8));
-    printf("level for  9 should be 1 : %d\n", level(9));
-    printf("level for  20 should be 1 : %d\n", level(20));
-    printf("level for  40 should be 1 : %d\n", level(40));
-    printf("level for  41 should be 2 : %d\n", level(41));
+    balloc(100);
+    balloc(100);
+    balloc(100);
+    balloc(1);
+
+
+//    struct head *block = new();
+//    printf("Original BLOCK %d\n", block);
+//    struct head *newBlock = split(block);
+//    printf("SECOND BLOCK %d\n", newBlock);
+//    newBlock->level = 6;
+//    printf("BUDDY %d\n", buddy(newBlock));
+
 }
