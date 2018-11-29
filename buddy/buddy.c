@@ -5,19 +5,12 @@
 #include "buddy.h"
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <assert.h>
 #include <errno.h>
 
-
-#define MIN  5
-#define LEVELS 8
-#define PAGE 4096
-
 enum flag {Free, Taken};
-
 
 struct head {
     enum flag status;
@@ -31,6 +24,7 @@ struct head {
 
 struct head *flists[LEVELS] = {NULL};
 
+void removeFromFlist(struct head *pHead);
 
 /* These are the low level bit fidling operations */
 
@@ -86,45 +80,113 @@ int level(int req) {
     return i;
 }
 
+void addToFlist (struct head *block) {
+    int l = block->level;
+    block->status = Free;
+
+    if (flists[l] == NULL) {
+        flists[l] = block;
+    } else {
+        struct head *temp = flists[l];
+        temp->prev = block;
+        block->next = temp;
+        flists[l] = block;
+    }
+}
+
 struct head *find(int index) {
     if (index == LEVELS-1) {
         printf("TOP LEVEL BLOCK\n");
+        if (flists[LEVELS-1] != NULL) {
+            struct head *block = flists[LEVELS-1];
+            removeFromFlist(block);
+            return block;
+        }
         return new();
     }
 
     if (flists[index] == NULL) {
         //Check next level up
         struct head *originalBlock = find(index+1);
+
+        // setting new splitted blocks
         struct head *splitBlock = split(originalBlock);
         splitBlock->level = index;
-        originalBlock->level = index;
-        flists[index] = splitBlock;
+        struct head *primaryBlock = buddy(splitBlock);
+        primaryBlock->level = index;
+        primaryBlock->status = Taken;
 
-//        if (flists[index+1] == NULL) {
-//            flists[index+1] = splitBlock;
-//        } else {
-//            splitBlock->next = flists[index+1]->next;
-//            splitBlock->prev = flists[index+1];
-//
-//            if (flists[index+1]->next != NULL) {
-//                flists[index+1]->next->prev = splitBlock;
-//            }
-//
-//            flists[index+1]->next = splitBlock;
-//        }
+        addToFlist(splitBlock);
 
-        printf("ORIGINAL BLOCK %d index %d\n", originalBlock, index);
-        printf("SPLIT    BLOCK %d index %d\n", splitBlock, index);
+        printf("ORIGINAL BLOCK %d index %d status %s\n", originalBlock, index, "taken");
+        printf("SPLIT    BLOCK %d index %d status %s\n", splitBlock, index, "free");
+        printf("PRIMARY  BLOCK %d index %d status %s\n", primaryBlock, index, "free");
 
         return buddy(splitBlock);
     } else {
         //Get block from list and remove it
         struct head *listBlock = flists[index];
+        listBlock->status = Taken;
         flists[index] = listBlock->next;
         return listBlock;
     }
 
     return NULL;
+}
+
+void insert(struct head *block) {
+    block->status = Free;
+
+    if (block->level == LEVELS-1) {
+        flists[LEVELS-1] = block;
+        printf("ALL FREE ADDRESS %d\n", block);
+        return;
+    }
+
+    struct head *buddyBlock = buddy(block);
+    printf("BLOCK ADDRESS %d BUDDY ADDRESS %d\n", block, buddyBlock);
+
+    if (buddyBlock->status == Taken) {
+        printf("BUDDY IS TAKEN\n");
+        addToFlist(block);
+    } else {
+        block->level++;
+        printf("BLOCK IS FREE at LEVEL %d\n", block->level);
+        removeFromFlist(buddyBlock);
+        insert(block);
+    }
+
+    return;
+}
+
+void removeFromFlist(struct head *block) {
+    struct head *listHead = flists[block->level];
+
+    printf("LIST HEAD: %d BLOCK: %d\n", listHead, block);
+
+    do {
+        if ((long int)listHead==(long int)block) {
+            printf("EQUAL!\n");
+
+            if (block->prev == NULL && block->next == NULL) {
+                // Why can't i write this? listHead = NULL;
+                flists[block->level] = NULL;
+                return;
+            }
+
+            if (block->prev != NULL) {
+                block->prev->next = block->next;
+            }
+
+            if (block->next != NULL) {
+                block->next->prev = block->prev;
+            }
+
+            return;
+        }
+    } while (listHead->next != NULL);
+
+    return;
 }
 
 void *balloc(size_t size) {
@@ -140,16 +202,10 @@ void *balloc(size_t size) {
     return hide(taken);
 }
 
-
-void insert(struct head *block) {
-    // for you to implement
-    return;
-}
-
 void bfree(void *memory) {
-
     if(memory != NULL) {
         struct head *block = magic(memory);
+        printf("BLOCK TO REMOVE ADDRESS %d\n", block);
         insert(block);
     }
     return;
@@ -157,25 +213,9 @@ void bfree(void *memory) {
 
 // Test sequences
 void test() {
-//    printf("size of head is: %ld\n", sizeof(struct head));
-//    printf("level for  7 should be 0 : %d\n", level(7));
-//    printf("level for  8 should be 0 : %d\n", level(8));
-//    printf("level for  9 should be 1 : %d\n", level(9));
-//    printf("level for  20 should be 1 : %d\n", level(20));
-//    printf("level for  40 should be 1 : %d\n", level(40));
-//    printf("level for  41 should be 2 : %d\n", level(41));\
-
-    balloc(100);
-    balloc(100);
-    balloc(100);
-    balloc(100);
-    balloc(100);
-
-//    struct head *block = new();
-//    printf("Original BLOCK %d\n", block);
-//    struct head *newBlock = split(block);
-//    printf("SECOND BLOCK %d\n", newBlock);
-//    newBlock->level = 6;
-//    printf("BUDDY %d\n", buddy(newBlock));
-
+    balloc(10);
+    balloc(10);
+    struct head *f2 =balloc(10);
+    bfree(f2);
+    balloc(10);
 }
