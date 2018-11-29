@@ -100,6 +100,19 @@ struct head *find(int index) {
         originalBlock->level = index;
         flists[index] = splitBlock;
 
+//        if (flists[index+1] == NULL) {
+//            flists[index+1] = splitBlock;
+//        } else {
+//            splitBlock->next = flists[index+1]->next;
+//            splitBlock->prev = flists[index+1];
+//
+//            if (flists[index+1]->next != NULL) {
+//                flists[index+1]->next->prev = splitBlock;
+//            }
+//
+//            flists[index+1]->next = splitBlock;
+//        }
+
         printf("ORIGINAL BLOCK %d index %d\n", originalBlock, index);
         printf("SPLIT    BLOCK %d index %d\n", splitBlock, index);
 
@@ -107,7 +120,7 @@ struct head *find(int index) {
     } else {
         //Get block from list and remove it
         struct head *listBlock = flists[index];
-        flists[index] = NULL;
+        flists[index] = listBlock->next;
         return listBlock;
     }
 
@@ -120,8 +133,9 @@ void *balloc(size_t size) {
     }
     int index = level(size);
     struct head *taken = find(index);
-
-    printf("\n OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
+    printf("\n\n ---- BLOCK ---- \n");
+    printf("OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
+    printf(" ---- BLOCK ---- \n\n");
 
     return hide(taken);
 }
@@ -154,8 +168,8 @@ void test() {
     balloc(100);
     balloc(100);
     balloc(100);
-    balloc(1);
-
+    balloc(100);
+    balloc(100);
 
 //    struct head *block = new();
 //    printf("Original BLOCK %d\n", block);
