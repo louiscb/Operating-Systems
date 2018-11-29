@@ -5,4 +5,6 @@
 #ifndef BUDDY_BENCHMARK_H
 #define BUDDY_BENCHMARK_H
 
+void benchmark();
+
 #endif //BUDDY_BENCHMARK_H
