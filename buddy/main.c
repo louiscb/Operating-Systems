@@ -3,9 +3,7 @@
 #include <unistd.h>
 #include <math.h>
 #include "buddy.h"
-#include "benchmark.h"
 
 int main(int argc, char *argv[]) {
     test();
-    benchmark();
 }

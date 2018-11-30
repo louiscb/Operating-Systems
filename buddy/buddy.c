@@ -19,14 +19,9 @@ struct head {
     struct head *prev;
 };
 
-
-/* The free lists */
-
 struct head *flists[LEVELS] = {NULL};
 
 void removeFromFlist(struct head *pHead);
-
-/* These are the low level bit fidling operations */
 
 struct head *new() {
     struct head *new = mmap(NULL, PAGE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -58,7 +53,6 @@ struct head *split(struct head *block) {
     int mask =  0x1 << (index + MIN);
     return (struct head *)((long int)block | mask );
 }
-
 
 void *hide(struct head* block) {
     return (void*)(block + 1);
@@ -95,8 +89,8 @@ void addToFlist (struct head *block) {
 }
 
 struct head *find(int index) {
+    //base case
     if (index == LEVELS-1) {
-       // printf("TOP LEVEL BLOCK\n");
         if (flists[LEVELS-1] != NULL) {
             struct head *block = flists[LEVELS-1];
             removeFromFlist(block);
@@ -118,10 +112,6 @@ struct head *find(int index) {
 
         addToFlist(splitBlock);
 
-//        printf("ORIGINAL BLOCK %d index %d status %s\n", originalBlock, index, "taken");
-//        printf("SPLIT    BLOCK %d index %d status %s\n", splitBlock, index, "free");
-//        printf("PRIMARY  BLOCK %d index %d status %s\n", primaryBlock, index, "free");
-
         return buddy(splitBlock);
     } else {
         //Get block from list and remove it
@@ -130,28 +120,25 @@ struct head *find(int index) {
         flists[index] = listBlock->next;
         return listBlock;
     }
-
-    return NULL;
 }
 
 void insert(struct head *block) {
     block->status = Free;
 
+    //base case
     if (block->level == LEVELS-1) {
         flists[LEVELS-1] = block;
-    //    printf("ALL FREE ADDRESS %d\n", block);
         return;
     }
 
     struct head *buddyBlock = buddy(block);
-    //printf("BLOCK ADDRESS %d BUDDY ADDRESS %d\n", block, buddyBlock);
 
-    if (buddyBlock->status == Taken) {
-       // printf("BUDDY IS TAKEN\n");
+    if (buddyBlock->status == Taken || buddyBlock->level == block->level) {
+        //Buddy is taken or not on same level so cannot merge
         addToFlist(block);
     } else {
+        //Merge blocks
         block->level++;
-        //printf("BLOCK IS FREE at LEVEL %d\n", block->level);
         removeFromFlist(buddyBlock);
         insert(block);
     }
@@ -162,14 +149,10 @@ void insert(struct head *block) {
 void removeFromFlist(struct head *block) {
     struct head *listHead = flists[block->level];
 
-    //printf("LIST HEAD: %d BLOCK: %d\n", listHead, block);
-
     do {
         if ((long int)listHead==(long int)block) {
-         //   printf("EQUAL!\n");
-
             if (block->prev == NULL && block->next == NULL) {
-                // Why can't i write this? listHead = NULL;
+                // Why can't i write this -> listHead = NULL;
                 flists[block->level] = NULL;
                 return;
             }
@@ -190,22 +173,17 @@ void removeFromFlist(struct head *block) {
 }
 
 void *balloc(size_t size) {
-    if( size == 0 ){
+    if (size == 0) {
         return NULL;
     }
     int index = level(size);
     struct head *taken = find(index);
-//    printf("\n\n ---- BLOCK ---- \n");
-//    printf("OUR BLOCK HERE: %d LEVEL: %d\n", taken, taken->level);
-//    printf(" ---- BLOCK ---- \n\n");
-
     return hide(taken);
 }
 
 void bfree(void *memory) {
-    if(memory != NULL) {
+    if (memory != NULL) {
         struct head *block = magic(memory);
-        //printf("BLOCK TO REMOVE ADDRESS %d\n", block);
         insert(block);
     }
     return;
@@ -213,9 +191,11 @@ void bfree(void *memory) {
 
 // Test sequences
 void test() {
+    printf("Running tests...\n");
     balloc(10);
     balloc(10);
     struct head *f2 =balloc(10);
     bfree(f2);
     balloc(10);
+    printf("Need some logs! \n");
 }
