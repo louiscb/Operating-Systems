@@ -1,4 +1,4 @@
-# Buddy Program
+# Buddy
 
 The buddy algorithm is a method of splitting and combining blocks of memory to
 return to a system memory request. When receiving a request, the algorithm will
@@ -12,4 +12,4 @@ up in memory as: 2^n where n is the level of the block. One of the buddy algorit
 
 # Report
 
-For me information read the Memory-Managment.pdf
+For more information read the Memory-Managment.pdf
