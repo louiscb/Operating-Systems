@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <ucontext.h>
 
-int mainjkll() {
+int main() {
     //making done a register will result in a infinite loop
     int done = 0;
     ucontext_t one;
     ucontext_t two;
-    ucontext_t three;
 
     //saves current state of program in context one
     getcontext(&one);
