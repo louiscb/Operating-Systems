@@ -3,7 +3,7 @@
 
 void *test(void *arg) {
     int i = *(int*)arg;
-    int loop = 4;
+    int loop = 10;
 
     while (loop > 0) {
         printf("thread %d: %d\n", i, loop);

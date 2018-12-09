@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ucontext.h>
+#include <stdio.h>
+
 
 #define FALSE 0
 #define TRUE 1
@@ -26,24 +28,27 @@ queue *readyQueue;
 //What do all of these parameteres mean?
 static void init() __attribute__((constructor));
 
-void enqueue(queue *queue1, green_t *thread);
+void enqueue(green_t *thread);
 
-green_t *dequeue(queue *queue1);
+green_t *dequeue();
 
 //this function initializes the main context before compile time
 void init() {
+    readyQueue = malloc(sizeof(queue));
     getcontext(&main_cntx);
 }
 
 void green_thread() {
+    printf("Running here...\n");
     green_t *this = running;
 
     //calls function of this with its arguments?
     (*this->fun)(this->arg);
+    printf("finished function\n");
 
     //should we be adding to the second position in ready queue?
     if (this->join)
-        enqueue(readyQueue, this->join);
+        enqueue(this->join);
 
     //free allocated stack
     free(this->context->uc_stack.ss_sp);
@@ -51,19 +56,21 @@ void green_thread() {
 
     this->zombie = TRUE;
 
-    green_t *next = dequeue(readyQueue);
+    green_t *next = dequeue();
 
     //What happens if Next is null?
-    // if (next == NULL)
-    //    return;
+    if (next == NULL)
+        printf("THIS IS NULL\n");
 
     running = next;
+    printf("SETTING CONTEXT\n");
     setcontext(next->context);
 }
 
-
 int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
+
     ucontext_t *cntx = (ucontext_t *)malloc(sizeof(ucontext_t));
+
     getcontext(cntx);
 
     void *stack = malloc(STACK_SIZE);
@@ -79,25 +86,27 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
     thread->join = NULL;
     thread->zombie = FALSE;
 
-    enqueue(readyQueue, thread);
-
+    enqueue(thread);
     return 0;
 }
 
-void enqueue(queue *queue1, green_t *thread) {
-    if (queue1->head == NULL) {
-        queue1->head = thread;
-        queue1->tail = thread;
+void enqueue(green_t *thread) {
+    printf("EN-QUEUE %x\n", thread);
+
+    if (readyQueue->head == NULL) {
+        readyQueue->head = thread;
+        readyQueue->tail = thread;
         return;
     }
 
-    queue1->tail->next = thread;
-    queue1->tail = thread;
+    readyQueue->tail->next = thread;
+    readyQueue->tail = thread;
 }
 
-green_t *dequeue(queue *queue1) {
+green_t *dequeue() {
     green_t *temp = readyQueue->head;
     readyQueue->head = readyQueue->head->next;
+    printf("DE-QUEUE %x\n", temp);
     return temp;
 }
 
@@ -108,8 +117,8 @@ green_t *dequeue(queue *queue1) {
 int green_yield() {
     green_t *susp = running;
 
-    enqueue(readyQueue, susp);
-    green_t *next = dequeue(readyQueue);
+    enqueue(susp);
+    green_t *next = dequeue();
 
     running = next;
 
@@ -120,31 +129,21 @@ int green_yield() {
     return 0;
 }
 
+/*
+ * This is used so that the main thread doesn't return
+ * before a secondary thread has finished processing.
+ *
+ */
 int green_join(green_t *thread) {
     if (thread->zombie)
         return 0;
 
     green_t *susp = running;
+    thread->join = susp;
 
+    running = thread;
 
-   // Does susp go to thread's join?
-   // Or thread to susp's join?????
-
-    green_t *next = susp->join;
-
-    
-
-    // Does
-
-//    while(next->join) {
-//        next = next->join;
-//    }
-//
-//    next->join = thread;
-
-    running = next;
-
-    swapcontext(susp->context, next->context);
+    swapcontext(susp->context, thread->context);
 
     return 0;
 }
