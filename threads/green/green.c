@@ -8,7 +8,6 @@
 #include <ucontext.h>
 #include <stdio.h>
 
-
 #define FALSE 0
 #define TRUE 1
 
@@ -32,6 +31,8 @@ void enqueue(green_t *thread);
 
 green_t *dequeue();
 
+void debugQueue();
+
 //this function initializes the main context before compile time
 void init() {
     readyQueue = malloc(sizeof(queue));
@@ -39,16 +40,16 @@ void init() {
 }
 
 void green_thread() {
-    printf("Running here...\n");
     green_t *this = running;
 
     //calls function of this with its arguments?
     (*this->fun)(this->arg);
-    printf("finished function\n");
-
+    //printf("FINISHED function\n");
     //should we be adding to the second position in ready queue?
-    if (this->join)
+    if (this->join) {
         enqueue(this->join);
+        this->join = NULL;
+    }
 
     //free allocated stack
     free(this->context->uc_stack.ss_sp);
@@ -60,10 +61,15 @@ void green_thread() {
 
     //What happens if Next is null?
     if (next == NULL)
-        printf("THIS IS NULL\n");
+        printf("NEXT IS NULL\n");
 
+    if (running == next) {
+      //  next = dequeue();
+    }
+
+   // printf("RUNNING - %lx\n", running);
     running = next;
-    printf("SETTING CONTEXT\n");
+   // printf("SETTING CONTEXT\n");
     setcontext(next->context);
 }
 
@@ -91,22 +97,33 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
 }
 
 void enqueue(green_t *thread) {
-    printf("EN-QUEUE %x\n", thread);
+   // printf("EN-QUEUE\n");
 
-    if (readyQueue->head == NULL) {
-        readyQueue->head = thread;
-        readyQueue->tail = thread;
+    if (readyQueue->tail == NULL ) {
+        readyQueue->head = readyQueue->tail = thread;
         return;
     }
 
     readyQueue->tail->next = thread;
     readyQueue->tail = thread;
+
+    //debugQueue();
 }
 
 green_t *dequeue() {
+    //printf("DE-QUEUE\n");
+    if (readyQueue->head == NULL)
+        return NULL;
+
     green_t *temp = readyQueue->head;
     readyQueue->head = readyQueue->head->next;
-    printf("DE-QUEUE %x\n", temp);
+
+    if (temp->zombie == TRUE) {
+        return dequeue();
+    }
+
+   // debugQueue();
+    temp->next = NULL;
     return temp;
 }
 
@@ -125,7 +142,6 @@ int green_yield() {
     //when the susp thread is scheduled again,
     // it will continue from exactly this point!
     swapcontext(susp->context, next->context);
-
     return 0;
 }
 
@@ -135,7 +151,7 @@ int green_yield() {
  *
  */
 int green_join(green_t *thread) {
-    if (thread->zombie)
+    if (thread->zombie || thread == running)
         return 0;
 
     green_t *susp = running;
@@ -146,4 +162,22 @@ int green_join(green_t *thread) {
     swapcontext(susp->context, thread->context);
 
     return 0;
+}
+
+void debugQueue() {
+    green_t *temp = readyQueue->head;
+    if (!temp)
+        return;
+
+    green_t use = *temp;
+    printf("0 - %lx\n", temp);
+
+    for (int i = 1; i < 10; ++i) {
+        printf("%d - %lx \n",i, use.next);
+
+        if (use.next == NULL)
+            return;
+
+        use = *use.next;
+    }
 }
