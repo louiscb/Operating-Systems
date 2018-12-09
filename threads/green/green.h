@@ -24,12 +24,15 @@ typedef struct green_t {
 } green_t;
 
 //initialise a green thread
+//our version of pthread_create()
 int green_create(green_t *thread, void *(*fun)(void*), void *arg);
 
 //suspends current thread and selects new thread for execution
+//our version of pthread_yield()
 int green_yield();
 
 //current thread is suspended waiting for a thread to terminate
+//our version of pthread_join()
 int green_join(green_t *thread);
 
 #endif //GREEN_GREEN_H
