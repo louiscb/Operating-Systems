@@ -92,3 +92,21 @@ int green_join(green_t *thread) {
 
     return 0;
 }
+
+void green_cond_init(green_cond_t *con) {
+    con->queue1 = malloc(sizeof(queue));
+}
+
+void green_cond_wait(green_cond_t *con) {
+    green_t *susp = running;
+    enqueue(con->queue1, susp);
+
+    running = dequeue(readyQueue);
+
+    swapcontext(susp->context, running->context);
+}
+
+void green_cond_signal(green_cond_t *con) {
+    green_t *susp = dequeue(con->queue1);
+    enqueue(readyQueue, susp);
+}

@@ -11,7 +11,8 @@ void enqueue(queue *queue1, green_t *thread) {
     }
 
     //Maybe as a precaution?
-    //thread->next = NULL;
+   // thread->next = NULL;
+
     queue1->tail->next = thread;
     queue1->tail = thread;
 }
