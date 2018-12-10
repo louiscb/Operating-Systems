@@ -32,6 +32,7 @@ typedef struct green_t {
 } green_t;
 
 typedef struct queue {
+    int id;
     struct green_t *head;
     struct green_t *tail;
 } queue;
@@ -39,7 +40,7 @@ typedef struct queue {
 
 //holds a number of suspended threads
 typedef struct green_cond_t {
-    queue *queue1;
+    queue *suspendedQueue;
 } green_cond_t;
 
 #endif //GREEN_STRUCTS_H

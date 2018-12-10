@@ -5,19 +5,22 @@
 #include "queue.h"
 
 void enqueue(queue *queue1, green_t *thread) {
-    if (queue1->tail == NULL) {
+    //printf("ENQUEUE %d\n", queue1->id);
+
+    if (queue1->tail == NULL || queue1->head == NULL) {
         queue1->head = queue1->tail = thread;
         return;
     }
 
     //Maybe as a precaution?
-   // thread->next = NULL;
+  //  thread->next = NULL;
 
     queue1->tail->next = thread;
     queue1->tail = thread;
 }
 
 green_t *dequeue(queue *queue1) {
+   // printf("DEQUEUE %d\n", queue1->id);
     if (queue1->head == NULL)
         return NULL;
 
@@ -41,7 +44,7 @@ void debugQueue(queue *queue1) {
 
     green_t use = *temp;
 
-    printf("\n--\n");
+    printf("\n- QUEUE %d-\n", queue1->id);
     printf("0-%lx", temp);
     for (int i = 1; i < 10; ++i) {
         if (use.next == NULL) {

@@ -17,6 +17,7 @@ static void init() __attribute__((constructor));
 //this function initializes the main context before compile time
 void init() {
     readyQueue = malloc(sizeof(queue));
+    readyQueue->id = 1;
     getcontext(&main_cntx);
 }
 
@@ -94,19 +95,27 @@ int green_join(green_t *thread) {
 }
 
 void green_cond_init(green_cond_t *con) {
-    con->queue1 = malloc(sizeof(queue));
+    con->suspendedQueue = malloc(sizeof(queue));
+    con->suspendedQueue->id = 2;
 }
 
 void green_cond_wait(green_cond_t *con) {
     green_t *susp = running;
-    enqueue(con->queue1, susp);
+    enqueue(con->suspendedQueue, susp);
 
     running = dequeue(readyQueue);
 
+//    printf("READY\n");
+//    debugQueue(readyQueue);
+//    printf("SUSPEND \n");
+//    debugQueue(con->suspendedQueue);
+    con->suspendedQueue->head;
     swapcontext(susp->context, running->context);
 }
 
 void green_cond_signal(green_cond_t *con) {
-    green_t *susp = dequeue(con->queue1);
-    enqueue(readyQueue, susp);
+    if (con->suspendedQueue->head == NULL)
+        return;
+
+    enqueue(readyQueue, dequeue(con->suspendedQueue));
 }
