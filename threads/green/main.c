@@ -28,7 +28,7 @@ void *test2(void *arg) {
     while (loop > -1) {
         printf("Thread: %d - %*s %d\n", i, loop, " ", loop);
         loop--;
-        pthread_yield();
+       // pthread_yield();
     }
 }
 
@@ -48,18 +48,18 @@ void greenTest() {
 }
 
 void pthreadTest() {
-    printf("-- Running Pthread --\n");
-    pthread_t p0, p1, p2, p3;
-
-    pthread_create(&p0, NULL, test2, &a0);
-    pthread_create(&p1, NULL, test2, &a1);
-    pthread_create(&p2, NULL, test2, &a2);
-
-    pthread_join(p0, NULL);
-    pthread_join(p1, NULL);
-    pthread_join(p2, NULL);
-    printf("-- Ending Pthread --\n");
-    return;
+//    printf("-- Running Pthread --\n");
+//    pthread_t p0, p1, p2, p3;
+//
+//    pthread_create(&p0, NULL, test2, &a0);
+//    pthread_create(&p1, NULL, test2, &a1);
+//    pthread_create(&p2, NULL, test2, &a2);
+//
+//    pthread_join(p0, NULL);
+//    pthread_join(p1, NULL);
+//    pthread_join(p2, NULL);
+//    printf("-- Ending Pthread --\n");
+//    return;
 }
 
 int main() {

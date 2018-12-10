@@ -29,6 +29,10 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg);
 
 //suspends current thread and selects new thread for execution
 //our version of pthread_yield()
+/*
+ * Function should put the running thread last in the ready queue
+ * then select first thread from the queue as next thread
+ */
 int green_yield();
 
 /*

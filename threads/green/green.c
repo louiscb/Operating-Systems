@@ -84,36 +84,6 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
     return 0;
 }
 
-void enqueue(green_t *thread) {
-    if (readyQueue->tail == NULL) {
-        readyQueue->head = readyQueue->tail = thread;
-        return;
-    }
-
-    thread->next = NULL;
-    readyQueue->tail->next = thread;
-    readyQueue->tail = thread;
-}
-
-green_t *dequeue() {
-    if (readyQueue->head == NULL)
-        return NULL;
-
-    green_t *temp = readyQueue->head;
-    readyQueue->head = readyQueue->head->next;
-
-    if (temp->zombie == TRUE) {
-        return dequeue();
-    }
-
-    temp->next = NULL;
-    return temp;
-}
-
-/*
- * Function should put the running thread last in the ready queue
- * then select first thread from the queue as next thread
- */
 int green_yield() {
     green_t *susp = running;
 
@@ -140,6 +110,35 @@ int green_join(green_t *thread) {
     swapcontext(susp->context, thread->context);
 
     return 0;
+}
+
+void enqueue(green_t *thread) {
+    if (readyQueue->tail == NULL) {
+        readyQueue->head = readyQueue->tail = thread;
+        return;
+    }
+
+    //Maybe as a precaution?
+    //thread->next = NULL;
+    readyQueue->tail->next = thread;
+    readyQueue->tail = thread;
+}
+
+green_t *dequeue() {
+    if (readyQueue->head == NULL)
+        return NULL;
+
+    green_t *temp = readyQueue->head;
+    readyQueue->head = readyQueue->head->next;
+
+    //Just in case there is a zombie in the wrong place
+    if (temp->zombie == TRUE) {
+        printf("ERROR: Zombie in Ready Queue");
+        return dequeue();
+    }
+
+    temp->next = NULL;
+    return temp;
 }
 
 void debugQueue() {
