@@ -7,6 +7,14 @@
 #define GREEN_GREEN_H
 
 #include <ucontext.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+
+#define FALSE 0
+#define TRUE 1
+
+#define STACK_SIZE 4096
 
 typedef struct green_t {
     //context of our thread

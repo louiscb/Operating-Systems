@@ -3,35 +3,16 @@
 //
 
 #include "green.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <ucontext.h>
-#include <stdio.h>
-
-#define FALSE 0
-#define TRUE 1
-
-#define STACK_SIZE 4096
+#include "queue.h"
 
 static ucontext_t main_cntx = {0};
 static green_t main_green = {&main_cntx, NULL, NULL, NULL, NULL, FALSE};
 static green_t *running = &main_green;
 
-typedef struct queue {
-    struct green_t *head;
-    struct green_t *tail;
-} queue;
-
 queue *readyQueue;
 
 //What do all of these parameteres mean?
 static void init() __attribute__((constructor));
-
-void enqueue(green_t *thread);
-
-green_t *dequeue();
-
-void debugQueue();
 
 //this function initializes the main context before compile time
 void init() {
@@ -46,7 +27,7 @@ void green_thread() {
     (*this->fun)(this->arg);
 
     if (this->join) {
-        enqueue(this->join);
+        enqueue(readyQueue, this->join);
         this->join = NULL;
     }
 
@@ -56,7 +37,7 @@ void green_thread() {
 
     this->zombie = TRUE;
 
-    green_t *next = dequeue();
+    green_t *next = dequeue(readyQueue);
 
     running = next;
     setcontext(next->context);
@@ -80,15 +61,15 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
     thread->join = NULL;
     thread->zombie = FALSE;
 
-    enqueue(thread);
+    enqueue(readyQueue, thread);
     return 0;
 }
 
 int green_yield() {
     green_t *susp = running;
 
-    enqueue(susp);
-    green_t *next = dequeue();
+    enqueue(readyQueue, susp);
+    green_t *next = dequeue(readyQueue);
 
     running = next;
 
@@ -105,58 +86,9 @@ int green_join(green_t *thread) {
     green_t *susp = running;
     thread->join = susp;
 
-    running = dequeue();
+    running = dequeue(readyQueue);
 
     swapcontext(susp->context, thread->context);
 
     return 0;
-}
-
-void enqueue(green_t *thread) {
-    if (readyQueue->tail == NULL) {
-        readyQueue->head = readyQueue->tail = thread;
-        return;
-    }
-
-    //Maybe as a precaution?
-    //thread->next = NULL;
-    readyQueue->tail->next = thread;
-    readyQueue->tail = thread;
-}
-
-green_t *dequeue() {
-    if (readyQueue->head == NULL)
-        return NULL;
-
-    green_t *temp = readyQueue->head;
-    readyQueue->head = readyQueue->head->next;
-
-    //Just in case there is a zombie in the wrong place
-    if (temp->zombie == TRUE) {
-        printf("ERROR: Zombie in Ready Queue");
-        return dequeue();
-    }
-
-    temp->next = NULL;
-    return temp;
-}
-
-void debugQueue() {
-    green_t *temp = readyQueue->head;
-    if (!temp)
-        return;
-
-    green_t use = *temp;
-
-    printf("\n--\n");
-    printf("0-%lx", temp);
-    for (int i = 1; i < 10; ++i) {
-        if (use.next == NULL) {
-            break;
-        }
-
-        printf(" --> %d-%lx ",i, use.next);
-        use = *use.next;
-    }
-    printf("\n--\n\n");
 }
