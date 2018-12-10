@@ -56,15 +56,13 @@ void green_thread() {
     free(this->context);
 
     this->zombie = TRUE;
-
+    //debugQueue();
     green_t *next = dequeue();
-
+    //debugQueue();
     //What happens if Next is null?
-    if (next == NULL)
+    if (next == NULL) {
         printf("NEXT IS NULL\n");
-
-    if (running == next) {
-      //  next = dequeue();
+        //return;
     }
 
    // printf("RUNNING - %lx\n", running);
@@ -74,7 +72,6 @@ void green_thread() {
 }
 
 int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
-
     ucontext_t *cntx = (ucontext_t *)malloc(sizeof(ucontext_t));
 
     getcontext(cntx);
@@ -97,21 +94,22 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
 }
 
 void enqueue(green_t *thread) {
-   // printf("EN-QUEUE\n");
+ //   printf("EN-QUEUE\n");
 
-    if (readyQueue->tail == NULL ) {
+    if (readyQueue->tail == NULL) {
         readyQueue->head = readyQueue->tail = thread;
         return;
     }
 
+    thread->next = NULL;
     readyQueue->tail->next = thread;
     readyQueue->tail = thread;
 
-    //debugQueue();
+   // debugQueue();
 }
 
 green_t *dequeue() {
-    //printf("DE-QUEUE\n");
+  //  printf("DE-QUEUE\n");
     if (readyQueue->head == NULL)
         return NULL;
 
@@ -122,7 +120,7 @@ green_t *dequeue() {
         return dequeue();
     }
 
-   // debugQueue();
+  //  debugQueue();
     temp->next = NULL;
     return temp;
 }
@@ -136,6 +134,9 @@ int green_yield() {
 
     enqueue(susp);
     green_t *next = dequeue();
+
+    if (next == NULL)
+        return;
 
     running = next;
 
@@ -151,13 +152,14 @@ int green_yield() {
  *
  */
 int green_join(green_t *thread) {
+   // printf("JOIN\n");
     if (thread->zombie || thread == running)
         return 0;
 
     green_t *susp = running;
     thread->join = susp;
 
-    running = thread;
+    running = dequeue();
 
     swapcontext(susp->context, thread->context);
 
@@ -170,14 +172,16 @@ void debugQueue() {
         return;
 
     green_t use = *temp;
-    printf("0 - %lx\n", temp);
 
+    printf("\n--\n");
+    printf("0-%lx", temp);
     for (int i = 1; i < 10; ++i) {
-        printf("%d - %lx \n",i, use.next);
+        if (use.next == NULL) {
+            break;
+        }
 
-        if (use.next == NULL)
-            return;
-
+        printf(" --> %d-%lx ",i, use.next);
         use = *use.next;
     }
+    printf("\n--\n\n");
 }
