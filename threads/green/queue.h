@@ -4,12 +4,7 @@
 
 #ifndef GREEN_QUEUE_H
 #define GREEN_QUEUE_H
-#include "green.h"
-
-typedef struct queue {
-    struct green_t *head;
-    struct green_t *tail;
-} queue;
+#include "structs.h"
 
 void enqueue(queue *queue1, green_t *thread);
 
