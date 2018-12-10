@@ -31,8 +31,12 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg);
 //our version of pthread_yield()
 int green_yield();
 
-//current thread is suspended waiting for a thread to terminate
-//our version of pthread_join()
+/*
+ * Current thread is suspended waiting for a thread to terminate
+ * our version of pthread_join()
+ * This is used so that the main thread doesn't return
+ * before a secondary thread has finished processing.
+ */
 int green_join(green_t *thread);
 
 #endif //GREEN_GREEN_H

@@ -42,10 +42,9 @@ void init() {
 void green_thread() {
     green_t *this = running;
 
-    //calls function of this with its arguments?
+    //calls function with arguments
     (*this->fun)(this->arg);
-    //printf("FINISHED function\n");
-    //should we be adding to the second position in ready queue?
+
     if (this->join) {
         enqueue(this->join);
         this->join = NULL;
@@ -56,18 +55,10 @@ void green_thread() {
     free(this->context);
 
     this->zombie = TRUE;
-    //debugQueue();
-    green_t *next = dequeue();
-    //debugQueue();
-    //What happens if Next is null?
-    if (next == NULL) {
-        printf("NEXT IS NULL\n");
-        //return;
-    }
 
-   // printf("RUNNING - %lx\n", running);
+    green_t *next = dequeue();
+
     running = next;
-   // printf("SETTING CONTEXT\n");
     setcontext(next->context);
 }
 
@@ -94,8 +85,6 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
 }
 
 void enqueue(green_t *thread) {
- //   printf("EN-QUEUE\n");
-
     if (readyQueue->tail == NULL) {
         readyQueue->head = readyQueue->tail = thread;
         return;
@@ -104,12 +93,9 @@ void enqueue(green_t *thread) {
     thread->next = NULL;
     readyQueue->tail->next = thread;
     readyQueue->tail = thread;
-
-   // debugQueue();
 }
 
 green_t *dequeue() {
-  //  printf("DE-QUEUE\n");
     if (readyQueue->head == NULL)
         return NULL;
 
@@ -120,7 +106,6 @@ green_t *dequeue() {
         return dequeue();
     }
 
-  //  debugQueue();
     temp->next = NULL;
     return temp;
 }
@@ -135,9 +120,6 @@ int green_yield() {
     enqueue(susp);
     green_t *next = dequeue();
 
-    if (next == NULL)
-        return;
-
     running = next;
 
     //when the susp thread is scheduled again,
@@ -146,14 +128,8 @@ int green_yield() {
     return 0;
 }
 
-/*
- * This is used so that the main thread doesn't return
- * before a secondary thread has finished processing.
- *
- */
 int green_join(green_t *thread) {
-   // printf("JOIN\n");
-    if (thread->zombie || thread == running)
+    if (thread->zombie)
         return 0;
 
     green_t *susp = running;
