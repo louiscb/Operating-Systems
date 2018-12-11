@@ -54,5 +54,8 @@ void green_cond_wait(green_cond_t *greenCond);
  */
 void green_cond_signal(green_cond_t *greenCond);
 
+void unblockTimer();
+
+void blockTimer();
 
 #endif //GREEN_GREEN_H

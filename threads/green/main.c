@@ -25,6 +25,7 @@ void *test(void *arg) {
 }
 
 void *test2(void *arg) {
+    unblockTimer();
     int i = *(int*)arg;
     int loop = TOTAL;
 
@@ -33,12 +34,13 @@ void *test2(void *arg) {
             printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
             loop--;
             flag = (i + 1)%3;
-            green_cond_signal(&con);
+            //green_cond_signal(&con);
         } else {
            // printf("wait\n");
-            green_cond_wait(&con);
+          //  green_cond_wait(&con);
         }
     }
+    blockTimer();
 }
 
 void *testPthread(void *arg) {

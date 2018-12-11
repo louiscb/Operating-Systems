@@ -10,7 +10,7 @@
 #include <time.h>
 
 #define PERIOD 10
-#define TIMER_ON FALSE
+#define TIMER_ON TRUE
 
 static sigset_t block;
 
@@ -49,6 +49,8 @@ void init() {
         period.it_interval = interval;
         period.it_value = interval;
         setitimer(ITIMER_VIRTUAL, &period, NULL);
+
+        sigprocmask(SIG_BLOCK, &block, NULL);
     }
 
     //start main thread
@@ -137,14 +139,11 @@ void green_cond_init(green_cond_t *con) {
 }
 
 void green_cond_wait(green_cond_t *con) {
-    printf("WAIT\n");
     green_t *susp = running;
 
     enqueue(con->suspendedQueue, susp);
-    //debugQueue(readyQueue);
 
     running = dequeue(readyQueue);
-    printf("Run %lx\n", running);
     swapcontext(susp->context, running->context);
 }
 
@@ -154,17 +153,23 @@ void green_cond_signal(green_cond_t *con) {
         return;
 
     green_t *unsuspend = dequeue(con->suspendedQueue);
-    debugQueue(readyQueue);
     enqueue(readyQueue, unsuspend);
 }
 
 void timer_handler(int sig) {
-   // printf("TIME INTERRUPT\n");
+    printf("TIME INTERRUPT\n");
     green_t *susp = running;
 
     enqueue(readyQueue, susp);
     running = dequeue(readyQueue);
 
-
     swapcontext(susp->context, running->context);
+}
+
+void unblockTimer() {
+    sigprocmask(SIG_UNBLOCK, &block, NULL);
+}
+
+void blockTimer() {
+    sigprocmask(SIG_BLOCK, &block, NULL);
 }
