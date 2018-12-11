@@ -4,7 +4,7 @@
 
 #ifndef GREEN_QUEUE_H
 #define GREEN_QUEUE_H
-#include "structs.h"
+#include "common.h"
 
 void enqueue(queue *queue1, green_t *thread);
 

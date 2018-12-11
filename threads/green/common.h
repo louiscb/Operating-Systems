@@ -32,12 +32,13 @@ typedef struct green_t {
 } green_t;
 
 typedef struct queue {
+    //for debugging
     int id;
     struct green_t *head;
     struct green_t *tail;
 } queue;
 
-//holds a number of suspended threads
+//holds a number of suspended threads for conditions
 typedef struct green_cond_t {
     queue *suspendedQueue;
 } green_cond_t;

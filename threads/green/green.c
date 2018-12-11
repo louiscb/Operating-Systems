@@ -50,6 +50,7 @@ void init() {
         period.it_value = interval;
         setitimer(ITIMER_VIRTUAL, &period, NULL);
 
+        //start with timer blocked so that our thread handling doesnt get interrupted
         sigprocmask(SIG_BLOCK, &block, NULL);
     }
 
@@ -157,7 +158,7 @@ void green_cond_signal(green_cond_t *con) {
 }
 
 void timer_handler(int sig) {
-    printf("TIME INTERRUPT\n");
+    //printf("TIME INTERRUPT\n");
     green_t *susp = running;
 
     enqueue(readyQueue, susp);
@@ -172,4 +173,22 @@ void unblockTimer() {
 
 void blockTimer() {
     sigprocmask(SIG_BLOCK, &block, NULL);
+}
+
+int green_mutex_init(green_mutex_t *mutex) {
+    mutex->taken = FALSE;
+    mutex->susp = NULL;
+    return 0;
+}
+
+int green_mutex_lock(green_mutex_t *mutex) {
+    green_t *susp = running;
+
+    while (mutex->taken) {
+
+    }
+}
+
+int green_mutex_unlock(green_mutex_t *mutex) {
+
 }

@@ -4,7 +4,12 @@
 #ifndef GREEN_H
 #define GREEN_H
 
-#include "structs.h"
+#include "common.h"
+
+typedef struct green_mutex_t {
+    volatile int taken;
+    struct green_t *susp;
+} green_mutex_t;
 
 /**Initialise a green thread
  * our version of pthread_create()
@@ -54,8 +59,18 @@ void green_cond_wait(green_cond_t *greenCond);
  */
 void green_cond_signal(green_cond_t *greenCond);
 
+/**
+ * these two functions are used to start and stop the timer
+ * so that the interrupts only occur during the threads internal logic
+ * and not in one of our functions that manipulate the state of said threads
+ */
 void unblockTimer();
-
 void blockTimer();
+
+int green_mutex_init(green_mutex_t *mutex);
+
+int green_mutex_lock(green_mutex_t *mutex);
+
+int green_mutex_unlock(green_mutex_t *mutex);
 
 #endif //GREEN_GREEN_H

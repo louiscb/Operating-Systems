@@ -9,23 +9,26 @@ static int a1 = 1;
 static int a2 = 2;
 static int a3 = 3;
 static int TOTAL = 4;
+static int NUM_OF_THREADS = 3;
+
 int flag = 0;
 green_cond_t con;
 
-void *test(void *arg) {
+//test concurrency
+int counter = 0;
+
+void *testYield(void *arg) {
     int i = *(int*)arg;
     int loop = TOTAL;
 
     while (loop > -1) {
         printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
-        //delay(2000);
         loop--;
-       // green_yield();
+        green_yield();
     }
 }
 
-void *test2(void *arg) {
-    unblockTimer();
+void *testCondition(void *arg) {
     int i = *(int*)arg;
     int loop = TOTAL;
 
@@ -33,13 +36,38 @@ void *test2(void *arg) {
         if (flag == i) {
             printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
             loop--;
-            flag = (i + 1)%3;
-            //green_cond_signal(&con);
+            flag = (i + 1)%NUM_OF_THREADS;
+            green_cond_signal(&con);
         } else {
-           // printf("wait\n");
-          //  green_cond_wait(&con);
+            green_cond_wait(&con);
         }
     }
+}
+
+void *testTimer(void *arg) {
+    unblockTimer();
+
+    int i = *(int*)arg;
+    int loop = TOTAL;
+
+    //the total change to counter value is 0
+    //without mutex this wont be so as interrupts
+    //may happen in between the counter increase and decrease
+    while (loop > -1) {
+        //printf("Thread: %d %*s %d\n", i, loop, " ", loop);
+        counter+=5;
+        loop--;
+
+        //spin to slow down function
+        //interrupt probably occurs here
+        for (int c = 1; c <= 3270; c++)
+            for (int d = 1; d <= 3270; d++)
+            {}
+
+        counter-=5;
+        printf("Thread: %d %d\n", i, counter);
+    }
+
     blockTimer();
 }
 
@@ -57,13 +85,13 @@ void *testPthread(void *arg) {
 void greenTest() {
     printf("-- Running Green Threading --\n");
 
-    green_cond_init(&con);
+    //green_cond_init(&con);
 
     green_t g0, g1, g2;
 
-    green_create(&g0, test2, &a0);
-    green_create(&g1, test2, &a1);
-    green_create(&g2, test2, &a2);
+    green_create(&g0, testTimer, &a0);
+    green_create(&g1, testTimer, &a1);
+    green_create(&g2, testTimer, &a2);
 
     green_join(&g0);
     green_join(&g1);
