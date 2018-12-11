@@ -5,19 +5,53 @@
 #include "green.h"
 #include "queue.h"
 
+#include <signal.h>
+#include <sys/time.h>
+#include <time.h>
+
+#define PERIOD 10
+#define TIMER_ON TRUE
+
+static sigset_t block;
+
 static ucontext_t main_cntx = {0};
 static green_t main_green = {&main_cntx, NULL, NULL, NULL, NULL, FALSE};
 static green_t *running = &main_green;
 
 queue *readyQueue;
 
-//What do all of these parameteres mean?
+static sigset_t block;
+
+void timer_handler(int);
+
 static void init() __attribute__((constructor));
 
 //this function initializes the main context before compile time
 void init() {
+    //init our ready queue
     readyQueue = malloc(sizeof(queue));
     readyQueue->id = 1;
+
+    if (TIMER_ON) {
+        //init our timer
+        sigemptyset(&block);
+        sigaddset(&block, SIGVTALRM);
+
+        struct sigaction act = {0};
+        struct timeval interval;
+        struct itimerval period;
+
+        act.sa_handler = timer_handler;
+        assert(sigaction(SIGVTALRM, &act, NULL) == 0);
+
+        interval.tv_sec = 0;
+        interval.tv_usec = PERIOD;
+        period.it_interval = interval;
+        period.it_value = interval;
+        setitimer(ITIMER_VIRTUAL, &period, NULL);
+    }
+
+    //start main thread
     getcontext(&main_cntx);
 }
 
@@ -85,6 +119,8 @@ int green_join(green_t *thread) {
         return 0;
 
     green_t *susp = running;
+
+    //make join loop
     thread->join = susp;
 
     running = dequeue(readyQueue);
@@ -101,21 +137,27 @@ void green_cond_init(green_cond_t *con) {
 
 void green_cond_wait(green_cond_t *con) {
     green_t *susp = running;
-    enqueue(con->suspendedQueue, susp);
 
+    enqueue(con->suspendedQueue, susp);
     running = dequeue(readyQueue);
 
-//    printf("READY\n");
-//    debugQueue(readyQueue);
-//    printf("SUSPEND \n");
-//    debugQueue(con->suspendedQueue);
-    con->suspendedQueue->head;
     swapcontext(susp->context, running->context);
 }
 
 void green_cond_signal(green_cond_t *con) {
-    if (con->suspendedQueue->head == NULL)
-        return;
+   // if (con->suspendedQueue->head == NULL)
+     //   return;
 
     enqueue(readyQueue, dequeue(con->suspendedQueue));
+}
+
+void timer_handler(int sig) {
+   // printf("TIME INTERRUPT\n");
+    green_t *susp = running;
+
+    enqueue(readyQueue, susp);
+    running = dequeue(readyQueue);
+
+
+    swapcontext(susp->context, running->context);
 }

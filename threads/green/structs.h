@@ -37,7 +37,6 @@ typedef struct queue {
     struct green_t *tail;
 } queue;
 
-
 //holds a number of suspended threads
 typedef struct green_cond_t {
     queue *suspendedQueue;

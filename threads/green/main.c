@@ -17,9 +17,10 @@ void *test(void *arg) {
     int loop = TOTAL;
 
     while (loop > -1) {
-        printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
+        printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
+        //delay(2000);
         loop--;
-        green_yield();
+       // green_yield();
     }
 }
 
@@ -31,10 +32,11 @@ void *test2(void *arg) {
         if (flag == i) {
             printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
             loop--;
-            flag = (i + 1)%2;
-            green_cond_signal(&con);
+            flag = (i + 1)%3;
+           // green_cond_signal(&con);
         } else {
-            green_cond_wait(&con);
+           // printf("wait\n");
+           // green_cond_wait(&con);
         }
     }
 }
@@ -57,11 +59,11 @@ void greenTest() {
 
     green_create(&g0, test2, &a0);
     green_create(&g1, test2, &a1);
-    //green_create(&g2, test, &a2);
+    green_create(&g2, test2, &a2);
 
     green_join(&g0);
     green_join(&g1);
-   // green_join(&g2);
+    green_join(&g2);
 
     printf("-- Ending Green Threading --\n");
     return;
