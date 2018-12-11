@@ -33,10 +33,10 @@ void *test2(void *arg) {
             printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
             loop--;
             flag = (i + 1)%3;
-           // green_cond_signal(&con);
+            green_cond_signal(&con);
         } else {
            // printf("wait\n");
-           // green_cond_wait(&con);
+            green_cond_wait(&con);
         }
     }
 }
@@ -54,7 +54,9 @@ void *testPthread(void *arg) {
 
 void greenTest() {
     printf("-- Running Green Threading --\n");
+
     green_cond_init(&con);
+
     green_t g0, g1, g2;
 
     green_create(&g0, test2, &a0);

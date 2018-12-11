@@ -10,7 +10,7 @@
 #include <time.h>
 
 #define PERIOD 10
-#define TIMER_ON TRUE
+#define TIMER_ON FALSE
 
 static sigset_t block;
 
@@ -89,6 +89,7 @@ int green_create(green_t *thread, void *(*fun)(void*), void *arg) {
     cntx->uc_stack.ss_size = STACK_SIZE;
 
     makecontext(cntx, green_thread, 0);
+
     thread->context = cntx;
     thread->fun = fun;
     thread->arg = arg;
@@ -136,19 +137,25 @@ void green_cond_init(green_cond_t *con) {
 }
 
 void green_cond_wait(green_cond_t *con) {
+    printf("WAIT\n");
     green_t *susp = running;
 
     enqueue(con->suspendedQueue, susp);
-    running = dequeue(readyQueue);
+    //debugQueue(readyQueue);
 
+    running = dequeue(readyQueue);
+    printf("Run %lx\n", running);
     swapcontext(susp->context, running->context);
 }
 
 void green_cond_signal(green_cond_t *con) {
-   // if (con->suspendedQueue->head == NULL)
-     //   return;
+    //when this is first called the suspeneded queue is null
+    if (con->suspendedQueue->head == NULL)
+        return;
 
-    enqueue(readyQueue, dequeue(con->suspendedQueue));
+    green_t *unsuspend = dequeue(con->suspendedQueue);
+    debugQueue(readyQueue);
+    enqueue(readyQueue, unsuspend);
 }
 
 void timer_handler(int sig) {
