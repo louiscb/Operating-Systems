@@ -9,8 +9,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define PERIOD 100
-#define TIMER_ON TRUE
+#define PERIOD 1
 
 static sigset_t block;
 
@@ -31,7 +30,7 @@ void init() {
     //init our ready queue
     readyQueue = malloc(sizeof(queue));
     readyQueue->id = 1;
-
+    TIMER_ON = TRUE;
     if (TIMER_ON) {
         //init our timer
         sigemptyset(&block);
@@ -145,22 +144,21 @@ void green_cond_wait(green_cond_t *con, green_mutex_t *mutex) {
 
     enqueue(con->suspendedQueue, susp);
 
-    if (mutex != NULL) {
+    if (mutex) {
         green_mutex_unlock(mutex);
-        printf("1) MUTEX %d\n", mutex->taken);
+        //printf("1) MUTEX %d\n", mutex->taken);
     }
-
 
     running = dequeue(readyQueue);
 
-    if (running)
+   // if (running)
         swapcontext(susp->context, running->context);
 
-    if (mutex != NULL) {
+    if (mutex) {
         while (mutex->taken) {
             //suspend
         }
-        printf("2) MUTEX %d\n", mutex->taken);
+        //printf("2) MUTEX %d\n", mutex->taken);
         mutex->taken = TRUE;
     }
 
@@ -171,7 +169,7 @@ void green_cond_wait(green_cond_t *con, green_mutex_t *mutex) {
 
 void green_cond_signal(green_cond_t *con) {
     //when this is first called the suspended queue is null
-    if (con->suspendedQueue->head == NULL)
+    if (con->suspendedQueue == NULL)
         return;
 
     green_t *unsuspend = dequeue(con->suspendedQueue);
@@ -223,7 +221,7 @@ int green_mutex_lock(green_mutex_t *mutex) {
 int green_mutex_unlock(green_mutex_t *mutex) {
     blockTimer();
 
-    if (mutex->susp->head) {
+    if (mutex->susp) {
         green_t *suspQueue = dequeue(mutex->susp);
         enqueue(readyQueue, suspQueue);
     }

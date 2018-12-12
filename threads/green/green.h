@@ -6,6 +6,8 @@
 
 #include "common.h"
 
+int TIMER_ON;
+
 typedef struct green_mutex_t {
     volatile int taken;
     queue *susp;

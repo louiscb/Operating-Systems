@@ -4,15 +4,11 @@
 #include "green.h"
 #include <pthread.h>
 
-static int a0 = 0;
-static int a1 = 1;
-static int a2 = 2;
-static int a3 = 3;
-static int TOTAL = 4;
-//100000000 took time
-static int NUM_OF_THREADS = 3;
-
+//Loop total
+static int TOTAL = 1000;
+static int NUM_OF_THREADS;
 int flag = 0;
+
 green_cond_t con;
 green_mutex_t mutex;
 
@@ -24,6 +20,8 @@ void *testYield(void *arg) {
     int loop = TOTAL;
 
     while (loop > -1) {
+        //printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
+
         if (loop == 0)
             printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
         loop--;
@@ -37,42 +35,40 @@ void *testCondition(void *arg) {
 
     while (loop > -1) {
         if (flag == i) {
-            printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
+           // printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
             loop--;
             flag = (i + 1)%NUM_OF_THREADS;
             green_cond_signal(&con);
         } else {
-            //green_cond_wait(&con);
+//            printf("WAIT\n");
+            green_cond_wait(&con, NULL);
         }
     }
+    printf("Thread: %d Flag: %d- %*s %d\n", i, flag, loop, " ", loop);
 }
 
 void *testTimer(void *arg) {
     unblockTimer();
 
     int i = *(int*)arg;
-    int loop = TOTAL;
 
     //the total change to counter value is 0
     //without mutex this wont be so as interrupts
     //may happen in between the counter increase and decrease
-    while (loop > -1) {
-        //printf("Thread: %d %*s %d\n", i, loop, " ", loop);
-        green_mutex_lock(&mutex);
-        counter+=1;
-        loop--;
 
-        //spin to slow down function
-        //interrupt probably occurs here
-        for (int c = 1; c <= 3270; c++)
-            for (int d = 1; d <= 3270; d++)
-            {}
+    green_mutex_lock(&mutex);
+    counter+=1;
 
-        counter-=1;
-        printf("Thread: %d Counter: %d\n", i, counter);
-       green_mutex_unlock(&mutex);
-    }
+    //spin to slow down function
+    //interrupt probably occurs here
+    for (int c = 1; c <= 3270; c++)
+        for (int d = 1; d <= 3270; d++)
+        {}
 
+    counter-=1;
+    green_mutex_unlock(&mutex);
+
+    printf("Thread: %d Counter: %d\n", i, counter);
     blockTimer();
 }
 
@@ -94,6 +90,32 @@ void *testTimerAtomic (void *arg) {
     }
 }
 
+void greenTest(int threads, void *fun) {
+    TIMER_ON = TRUE;
+    NUM_OF_THREADS = threads;
+    green_mutex_init(&mutex);
+
+    green_t *thread = malloc(sizeof(green_t)*NUM_OF_THREADS);
+    int num[NUM_OF_THREADS];
+
+    for (int i = 0; i < NUM_OF_THREADS; i++) {
+        num[i] = i;
+
+        int code = green_create(&thread[i], fun, &num[i]);
+
+        if (code) {
+            printf("ERROR CREATING THREADS\n");
+            return;
+        }
+    }
+
+    for (int i = 0; i < NUM_OF_THREADS; i++) {
+        green_join(&thread[i]);
+    }
+
+    return;
+}
+
 void *testPthread(void *arg) {
     int i = *(int*)arg;
     int loop = TOTAL;
@@ -101,31 +123,8 @@ void *testPthread(void *arg) {
     while (loop > -1) {
         printf("Thread: %d - %*s %d\n", i, loop, " ", loop);
         loop--;
-       // pthread_yield();
+        // pthread_yield();
     }
-}
-
-void greenTest() {
-    printf("-- Running Green Threading --\n");
-
-    green_cond_init(&con);
-    green_mutex_init(&mutex);
-    
-    green_t g0, g1, g2;
-
-    green_create(&g0, testTimerAtomic, &a0);
-    green_create(&g1, testTimerAtomic, &a1);
-    green_create(&g2, testTimerAtomic, &a2);
-
-    green_join(&g0);
-    green_join(&g1);
-    green_join(&g2);
-
-    if (counter==0)
-        printf("Passed mutex test!\n");
-
-    printf("-- Ending Green Threading --\n");
-    return;
 }
 
 void pthreadTest() {
@@ -145,9 +144,12 @@ void pthreadTest() {
 
 int main() {
     printf(" - START -\n");
+    green_cond_init(&con);
 
-    greenTest();
-//    pthreadTest();
+    //provide the number of threads and function to test
+    greenTest(4, &testTimer);
+
+   //pthreadTest();
 
     printf("- END -\n");
 

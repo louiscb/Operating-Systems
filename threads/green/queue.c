@@ -5,7 +5,7 @@
 #include "queue.h"
 
 void enqueue(queue *queue1, green_t *thread) {
-    printf("ENQUEUE %d: %lx \n ", queue1->id, thread);
+    //printf("ENQUEUE %d: %lx \n ", queue1->id, thread);
 
     if (thread == NULL)
         return;
@@ -36,7 +36,7 @@ green_t *dequeue(queue *queue1) {
     }
 
     temp->next = NULL;
-    printf("DEQUEUE %d: %lx \n ", queue1->id, temp);
+    //printf("DEQUEUE %d: %lx \n ", queue1->id, temp);
     return temp;
 }
 
