@@ -8,7 +8,7 @@ static int a0 = 0;
 static int a1 = 1;
 static int a2 = 2;
 static int a3 = 3;
-static int TOTAL = 100000000;
+static int TOTAL = 4;
 //100000000 took time
 static int NUM_OF_THREADS = 3;
 
@@ -59,7 +59,7 @@ void *testTimer(void *arg) {
     while (loop > -1) {
         //printf("Thread: %d %*s %d\n", i, loop, " ", loop);
         green_mutex_lock(&mutex);
-        counter+=5;
+        counter+=1;
         loop--;
 
         //spin to slow down function
@@ -68,9 +68,9 @@ void *testTimer(void *arg) {
             for (int d = 1; d <= 3270; d++)
             {}
 
-        counter-=5;
-        printf("Thread: %d %d\n", i, counter);
-        green_mutex_unlock(&mutex);
+        counter-=1;
+        printf("Thread: %d Counter: %d\n", i, counter);
+       green_mutex_unlock(&mutex);
     }
 
     blockTimer();
@@ -95,13 +95,16 @@ void greenTest() {
     
     green_t g0, g1, g2;
 
-    green_create(&g0, testYield, &a0);
-    green_create(&g1, testYield, &a1);
-    green_create(&g2, testYield, &a2);
+    green_create(&g0, testTimer, &a0);
+    green_create(&g1, testTimer, &a1);
+    green_create(&g2, testTimer, &a2);
 
     green_join(&g0);
     green_join(&g1);
     green_join(&g2);
+
+    if (counter==0)
+        printf("Passed mutex test!\n");
 
     printf("-- Ending Green Threading --\n");
     return;

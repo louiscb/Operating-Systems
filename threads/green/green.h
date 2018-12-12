@@ -8,7 +8,7 @@
 
 typedef struct green_mutex_t {
     volatile int taken;
-    struct green_t *susp;
+    queue *susp;
 } green_mutex_t;
 
 /**Initialise a green thread
