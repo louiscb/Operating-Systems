@@ -8,7 +8,8 @@ static int a0 = 0;
 static int a1 = 1;
 static int a2 = 2;
 static int a3 = 3;
-static int TOTAL = 4;
+static int TOTAL = 100000000;
+//100000000 took time
 static int NUM_OF_THREADS = 3;
 
 int flag = 0;
@@ -22,7 +23,8 @@ void *testYield(void *arg) {
     int loop = TOTAL;
 
     while (loop > -1) {
-        printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
+        if (loop == 0)
+            printf("Thread: %d- %*s %d\n", i, loop, " ", loop);
         loop--;
         green_yield();
     }
@@ -89,9 +91,9 @@ void greenTest() {
 
     green_t g0, g1, g2;
 
-    green_create(&g0, testTimer, &a0);
-    green_create(&g1, testTimer, &a1);
-    green_create(&g2, testTimer, &a2);
+    green_create(&g0, testYield, &a0);
+    green_create(&g1, testYield, &a1);
+    green_create(&g2, testYield, &a2);
 
     green_join(&g0);
     green_join(&g1);

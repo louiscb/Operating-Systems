@@ -185,8 +185,10 @@ int green_mutex_lock(green_mutex_t *mutex) {
     green_t *susp = running;
 
     while (mutex->taken) {
-
+       // susp =
     }
+
+    mutex->taken = TRUE;
 }
 
 int green_mutex_unlock(green_mutex_t *mutex) {
