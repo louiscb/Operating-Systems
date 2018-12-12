@@ -182,15 +182,36 @@ int green_mutex_init(green_mutex_t *mutex) {
 }
 
 int green_mutex_lock(green_mutex_t *mutex) {
+    blockTimer();
+
     green_t *susp = running;
 
     while (mutex->taken) {
-       // susp =
+        if (mutex->susp == NULL) {
+            mutex->susp = susp;
+        } else {
+            mutex->susp->next = susp;
+        }
+
+        running = dequeue(readyQueue);
+        swapcontext(susp->context, running->context);
     }
 
     mutex->taken = TRUE;
+
+    unblockTimer();
+
+    return 0;
 }
 
 int green_mutex_unlock(green_mutex_t *mutex) {
+    blockTimer();
 
+    enqueue(readyQueue, mutex->susp);
+
+    mutex->taken = FALSE;
+
+    unblockTimer();
+
+    return 0;
 }

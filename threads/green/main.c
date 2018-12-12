@@ -14,6 +14,7 @@ static int NUM_OF_THREADS = 3;
 
 int flag = 0;
 green_cond_t con;
+green_mutex_t mutex;
 
 //test concurrency
 int counter = 0;
@@ -57,6 +58,7 @@ void *testTimer(void *arg) {
     //may happen in between the counter increase and decrease
     while (loop > -1) {
         //printf("Thread: %d %*s %d\n", i, loop, " ", loop);
+        green_mutex_lock(&mutex);
         counter+=5;
         loop--;
 
@@ -68,6 +70,7 @@ void *testTimer(void *arg) {
 
         counter-=5;
         printf("Thread: %d %d\n", i, counter);
+        green_mutex_unlock(&mutex);
     }
 
     blockTimer();
@@ -88,7 +91,8 @@ void greenTest() {
     printf("-- Running Green Threading --\n");
 
     //green_cond_init(&con);
-
+    green_mutex_init(&mutex);
+    
     green_t g0, g1, g2;
 
     green_create(&g0, testYield, &a0);
