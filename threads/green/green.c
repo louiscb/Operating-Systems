@@ -30,7 +30,7 @@ void init() {
     //init our ready queue
     readyQueue = malloc(sizeof(queue));
     readyQueue->id = 1;
-    TIMER_ON = TRUE;
+    TIMER_ON = FALSE;
     if (TIMER_ON) {
         //init our timer
         sigemptyset(&block);
