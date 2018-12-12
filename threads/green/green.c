@@ -139,17 +139,38 @@ void green_cond_init(green_cond_t *con) {
     con->suspendedQueue->id = 2;
 }
 
-void green_cond_wait(green_cond_t *con) {
+void green_cond_wait(green_cond_t *con, green_mutex_t *mutex) {
+    blockTimer();
     green_t *susp = running;
 
     enqueue(con->suspendedQueue, susp);
 
+    if (mutex != NULL) {
+        green_mutex_unlock(mutex);
+        printf("1) MUTEX %d\n", mutex->taken);
+    }
+
+
     running = dequeue(readyQueue);
-    swapcontext(susp->context, running->context);
+
+    if (running)
+        swapcontext(susp->context, running->context);
+
+    if (mutex != NULL) {
+        while (mutex->taken) {
+            //suspend
+        }
+        printf("2) MUTEX %d\n", mutex->taken);
+        mutex->taken = TRUE;
+    }
+
+    unblockTimer();
+
+    return;
 }
 
 void green_cond_signal(green_cond_t *con) {
-    //when this is first called the suspeneded queue is null
+    //when this is first called the suspended queue is null
     if (con->suspendedQueue->head == NULL)
         return;
 
@@ -202,10 +223,13 @@ int green_mutex_lock(green_mutex_t *mutex) {
 int green_mutex_unlock(green_mutex_t *mutex) {
     blockTimer();
 
-    green_t *suspQueue = dequeue(mutex->susp);
-    enqueue(readyQueue, suspQueue);
+    if (mutex->susp->head) {
+        green_t *suspQueue = dequeue(mutex->susp);
+        enqueue(readyQueue, suspQueue);
+    }
 
     mutex->taken = FALSE;
+
     unblockTimer();
 
     return 0;

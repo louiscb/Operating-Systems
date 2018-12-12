@@ -42,7 +42,7 @@ void *testCondition(void *arg) {
             flag = (i + 1)%NUM_OF_THREADS;
             green_cond_signal(&con);
         } else {
-            green_cond_wait(&con);
+            //green_cond_wait(&con);
         }
     }
 }
@@ -76,6 +76,24 @@ void *testTimer(void *arg) {
     blockTimer();
 }
 
+void *testTimerAtomic (void *arg) {
+    int i = *(int*)arg;
+    //printf(" thread here\n");
+    green_mutex_lock(&mutex);
+    while (1) {
+        if (flag == 0) {
+            flag = 1;
+            green_cond_signal(&con);
+            green_mutex_unlock(&mutex);
+            printf("Thread: %d got flag\n", i);
+            break;
+        } else {
+            printf("Thread: %d waiting \n", i);
+            green_cond_wait(&con, &mutex);
+        }
+    }
+}
+
 void *testPthread(void *arg) {
     int i = *(int*)arg;
     int loop = TOTAL;
@@ -90,14 +108,14 @@ void *testPthread(void *arg) {
 void greenTest() {
     printf("-- Running Green Threading --\n");
 
-    //green_cond_init(&con);
+    green_cond_init(&con);
     green_mutex_init(&mutex);
     
     green_t g0, g1, g2;
 
-    green_create(&g0, testTimer, &a0);
-    green_create(&g1, testTimer, &a1);
-    green_create(&g2, testTimer, &a2);
+    green_create(&g0, testTimerAtomic, &a0);
+    green_create(&g1, testTimerAtomic, &a1);
+    green_create(&g2, testTimerAtomic, &a2);
 
     green_join(&g0);
     green_join(&g1);

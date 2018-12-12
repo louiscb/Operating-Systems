@@ -48,7 +48,7 @@ void green_cond_init(green_cond_t *greenCond);
  *
  * @param greenCond
  */
-void green_cond_wait(green_cond_t *greenCond);
+void green_cond_wait(green_cond_t *greenCond, green_mutex_t *mutex);
 
 /**
  * move the first suspended thread to the ready queue
