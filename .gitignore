@@ -3,4 +3,5 @@ cmake-build-*/
 CMakeLists.txt
 *.swp
 bin/
+exercises/
 .DS_store
