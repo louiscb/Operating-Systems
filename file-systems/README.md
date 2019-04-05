@@ -1,3 +1,3 @@
 # File Systems
 
-Explore both the performance of secondary storage and how the file system is constructed
+The concept of maintaining persistent data in an organised manner by the operating system.

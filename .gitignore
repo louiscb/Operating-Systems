@@ -4,3 +4,5 @@ CMakeLists.txt
 *.swp
 bin/
 .DS_store
+*.bin
+.vscode/
