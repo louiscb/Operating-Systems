@@ -6,7 +6,7 @@
 * Child process Runs word count on a file
 *
 * Exec does not create a new process it transforms the currently running program
-* into a different program. After the exec in the child, it is as if p3.c never ran,
+* into a different program. After the exec in the child, it is as if exec.c never ran,
 * a successful call to exec never returns
 */
 

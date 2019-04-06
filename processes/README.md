@@ -1,5 +1,23 @@
 # The Process
 
+## Programs
+
+`exec.c` - Show how a child executing a command looks
+
+`mapping.c` - Program that details the Linux memory mapping of a process
+
+`fork.c` - Very very simple example of forking a process
+
+TO DO !`open.c` - Shows how a child and parent show file descriptor tables
+
+`orphan.c` - Shows what an orphan process is
+
+`wait.c` - Shows how the parent can hang on the child to return
+
+`zombie.c` - Shows what a zombie process is 
+
+## Info
+
 A process is the major OS abstraction of a running program. 
 
 Time Sharing of the CPU allows users to run as many concurrent processes as they would like by promoting the illusion that there exist infinite virtual CPUS. The cost is performance as each process runs more slowly if the CPU is shared.
