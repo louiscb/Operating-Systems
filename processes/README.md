@@ -4,17 +4,22 @@
 
 `exec.c` - Show how a child executing a command looks
 
-`mapping.c` - Program that details the Linux memory mapping of a process
+`handle-exceptions.c` - Handles an error that is raised with a process signal
 
 `fork.c` - Very very simple example of forking a process
+
+`mapping.c` - Program that details the Linux memory mapping of a process
 
 TO DO !`open.c` - Shows how a child and parent show file descriptor tables
 
 `orphan.c` - Shows what an orphan process is
 
+`stay-alive.c` - Program that attempts to not terminate
+
 `wait.c` - Shows how the parent can hang on the child to return
 
 `zombie.c` - Shows what a zombie process is 
+
 
 ## Info
 
