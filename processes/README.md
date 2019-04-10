@@ -10,7 +10,7 @@
 
 `mapping.c` - Program that details the Linux memory mapping of a process
 
-TO DO !`open.c` - Shows how a child and parent show file descriptor tables
+`open.c` - Shows how a child and parent show file descriptor tables
 
 `orphan.c` - Shows what an orphan process is
 
@@ -21,7 +21,15 @@ TO DO !`open.c` - Shows how a child and parent show file descriptor tables
 `zombie.c` - Shows what a zombie process is 
 
 
+### Questions
+
+- Where do we store return addresses?
+
+- Library procedures vs system calls?
+
 ## Info
+
+Previous stack base pointer (EBP) is stored on stack
 
 A process is the major OS abstraction of a running program. 
 
