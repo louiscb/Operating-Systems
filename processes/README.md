@@ -10,7 +10,7 @@
 
 `mapping.c` - Program that details the Linux memory mapping of a process
 
-TO DO !`open.c` - Shows how a child and parent show file descriptor tables
+`open.c` - Shows how a child and parent show file descriptor tables
 
 `orphan.c` - Shows what an orphan process is
 
