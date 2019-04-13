@@ -11,7 +11,6 @@
 #define LEVELS 8
 #define PAGE 4096
 
-void test();
 void bfree(void *memory);
 void *balloc(size_t size);
 

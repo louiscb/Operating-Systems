@@ -3,7 +3,6 @@
 //
 
 #include "buddy.h"
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -187,15 +186,4 @@ void bfree(void *memory) {
         insert(block);
     }
     return;
-}
-
-// Test sequences
-void test() {
-    printf("Running tests...\n");
-    balloc(10);
-    balloc(10);
-    struct head *f2 =balloc(10);
-    bfree(f2);
-    balloc(10);
-    printf("Need some logs! \n");
 }
