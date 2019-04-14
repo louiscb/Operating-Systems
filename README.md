@@ -10,11 +10,18 @@ My primary learning resources were:
 - [Operating Systems: Three Easy Pieces](http://pages.cs.wisc.edu/~remzi/OSTEP/)
 - [KTH course ID1206](https://www.kth.se/student/kurser/kurs/ID1206?l=en)
 
-## Four easy pieces
-
-The repository is divided into four seperate chapters. Below I have summarised my notes for these topics and included references to the related code. 
-
 ### Processes
+
+The process is the major OS abstraction of a running program.
+
+The OS uses the process's API to manage its processes:
+
+Process API:    
+- Create: OS must be able to create new processes
+- Destroy: Forcefully be able to destroy a process 
+- Wait: It is useful to wait for a process to stop running
+- Miscellaneous Control: E.g suspend process
+- Status: Get status information on the running of a process
 
 ### Virtual memory
 

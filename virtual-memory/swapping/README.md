@@ -1,4 +1,3 @@
-
 # Page Swapping
 
 Compare page replacement algorithms.
