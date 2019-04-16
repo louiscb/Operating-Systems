@@ -3,12 +3,10 @@
 //
 
 /**
- * This program implements peterson algorithm which allows multiple executions to access the same resource
+ * This is the updated version of the peterson algorithm implementation where
+ * we now use the atomic operation "sync_val_compare_and_swap" instead of them being several
+ * different commands
  *
- * Run the program with `50000 on` compared to `50000 off` and see which version is more accurate
- *
- * We still have an margin of error with our locked program, this is because the steps that occur in "lock"
- * and "unlock" are not atomic
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +14,6 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <zconf.h>
-
 
 int count = 0;
 int locked = 1;
@@ -59,7 +56,7 @@ void *increment(void *arg) {
     for (int i = 0; i < inc; i++) {
         if (locked == 1) {
             int spin_count = lock(mutex);
-            printf("Spin count: %d\n", spin_count);
+            //printf("Spin count: %d\n", spin_count);
             count++;
             unlock(mutex);
         } else {
