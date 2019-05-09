@@ -28,6 +28,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    int *test = malloc(sizeof(int));
+
+
+
     assert(listen(server_socket, 5) !=1);
 
     int socket_descriptor; // = accept(server_socket, NULL, NULL);
