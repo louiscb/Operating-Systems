@@ -1,4 +1,4 @@
-# The Process
+# Processes
 
 ## Programs
 
