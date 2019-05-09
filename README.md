@@ -6,4 +6,4 @@ The content of this repository is focused on UNIX based operating systems, and a
 
 My primary learning resources were: 
 - [Operating Systems: Three Easy Pieces](http://pages.cs.wisc.edu/~remzi/OSTEP/)
-- [KTH course ID1206](https://www.kth.se/student/kurser/kurs/ID1206?l=en
+- [KTH course ID1206](https://www.kth.se/student/kurser/kurs/ID1206?l=en)
